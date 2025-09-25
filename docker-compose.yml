@@ -1,0 +1,56 @@
+version: "3.9"
+services:
+  nextjs:
+    build: .
+    container_name: wordbook-nextjs
+    volumes:
+      - ./src:/app
+      - ./logs:/tmp/npm-cache/_logs
+      - wordebook_node_modules:/app/node_modules
+      - wordebook_nextjs_cache:/app/.next
+    ports:
+      - "3001:3000"
+      # - "9229:9229"
+    # stdin_open: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - WATCHPACK_POLLING_INTERVAL=1000
+      - NEXT_WEBPACK_USEPOLLING=1
+    tty: true
+    depends_on:
+      - db
+    # command: sh -c "tail -f /dev/null"
+    # command: sh -c "node --inspect=0.0.0.0:9229 node_modules/.bin/next dev"
+    # command: sh -c "npm run dev"
+    command: npm run dev
+
+  db:
+    image: mysql:8.0
+    container_name: wordbook-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: wordbook
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - "8081:80"
+
+volumes:
+  db_data:
+  wordebook_node_modules:
+  wordebook_nextjs_cache:
